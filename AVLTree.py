@@ -145,11 +145,19 @@ class AVLTree(object):
 	@type key: int
 	@param key: a key to be searched
 	@rtype: (AVLNode,int)
-	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
+	@returns: a tuple (x,e) where x is the node corresponding to key or the corresponding virtual node (if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def Search_from_node(self, node: AVLNode, key: int):
-		return None, -1
+		if key == node.key or node.is_real_node() == False:
+			# if we found the key or reached a virtual node
+			return node, 0
+		elif key < node.key:
+			res_node, edges = self.Search_from_node(node.left, key)
+			return res_node, edges + 1
+		else:
+			res_node, edges = self.Search_from_node(node.right, key)
+			return res_node, edges + 1
 
 
 	"""searches for a node in the dictionary corresponding to the key (starting at the root)
@@ -161,6 +169,11 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def search(self, key: int):
+		if self.root is None:
+			return None, -1
+		node = self.search_from_node(self.root, key)
+		if node[0].is_real_node():
+			return node
 		return None, -1
 
 
