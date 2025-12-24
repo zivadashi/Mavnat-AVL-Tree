@@ -195,27 +195,90 @@ class AVLTree(object):
 	@type node: AVLNode
 	@param node: the node to perform the left rotation on
 	"""
-	def left_rotation(self, node: AVLNode):
-		return
+    def left_rotation(self, node: AVLNode):
+        v = node
+        if v is None or not v.is_real_node():
+            return
+
+        u = v.right
+        if u is None or not u.is_real_node():
+            return
+
+        parent = v.parent
+
+        # מחברים את u במקום v
+        if parent is not None:
+            if parent.left is v:
+                parent.set_left(u)
+            else:
+                parent.set_right(u)
+        else:
+            self.root = u
+            u.parent = None
+
+        w = u.left
+
+        u.set_left(v)
+        v.set_right(w)
+
+        v.update_height()
+        u.update_height()
 
 
-	"""performs a right rotation on node
-	
-	@type node: AVLNode
-	@param node: the node to perform the right rotation on
-	"""
-	def right_rotation(self, node: AVLNode):
-		return
+    def right_rotation(self, node: AVLNode):
+        v = node
+        if v is None or not v.is_real_node():
+            return
+
+        u = v.left
+        if u is None or not u.is_real_node():
+            return
+
+        parent = v.parent
+
+        # מחברים את u במקום v
+        if parent is not None:
+            if parent.left is v:
+                parent.set_left(u)
+            else:
+                parent.set_right(u)
+        else:
+            self.root = u
+            u.parent = None
+
+        w = u.right
+
+        u.set_right(v)
+        v.set_left(w)
+
+        v.update_height()
+        u.update_height()
 
 
-	"""performs the appropriate rotation(s) on node to rebalance the tree
-	
-	@type node: AVLNode
-	@param node: the node to perform the rotation(s) on
-	"""
-	def rotate(self, node: AVLNode):
-		return
+    def rotate(self, node: AVLNode):
+        v = node
+        if v is None or not v.is_real_node():
+            return
 
+        bf_v = v.get_bf()
+
+        # bf = -2 → כבד ימינה
+        if bf_v == -2:
+            r = v.right
+            if r.get_bf() in (-1, 0):
+                self.left_rotation(v)
+            else:  # bf = +1
+                self.right_rotation(r)
+                self.left_rotation(v)
+
+        # bf = +2 → כבד שמאלה
+        elif bf_v == 2:
+            l = v.left
+            if l.get_bf() in (1, 0):
+                self.right_rotation(v)
+            else:  # bf = -1
+                self.left_rotation(l)
+                self.right_rotation(v)
 
 	"""fixes the AVL tree above node after an insertion or deletion
 	
