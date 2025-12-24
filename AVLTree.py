@@ -370,8 +370,17 @@ class AVLTree(object):
 		else:
 			node.parent.set_right(u)
 		
-		u.set_left(node.left)
-		u.set_right(node.right)
+		if u.parent == node:
+			u.parent = node.parent
+		else:
+			u.set_left(node.left)
+			u.set_right(node.right)
+
+		self.fix_above(u.parent, True)
+
+		if self.max == node:
+			self.max = u
+
 		return
 
 	
@@ -383,6 +392,17 @@ class AVLTree(object):
 	@returns: the minimal node with height height, None if such a node does not exist
 	"""
 	def find_minimal_by_height(self, height: int):
+		node = self.root
+		while node.is_real_node():
+			if node.height == height:
+				return node
+			elif node.height > height:
+				if node.left.is_real_node():
+					node = node.left
+				elif node.right.is_real_node():
+					node = node.right
+			else:
+				return None
 		return None
 	
 
@@ -394,6 +414,17 @@ class AVLTree(object):
 	@returns: the maximal node with height height, None if such a node does not exist
 	"""
 	def find_maximal_by_height(self, height: int):
+		node = self.root
+		while node.is_real_node():
+			if node.height == height:
+				return node
+			elif node.height > height:
+				if node.right.is_real_node():
+					node = node.right
+				elif node.left.is_real_node():
+					node = node.left
+			else:
+				return None
 		return None
 	
 
@@ -408,7 +439,18 @@ class AVLTree(object):
 	@pre: all keys in self are smaller than key and all keys in tree2 are larger than key,
 	or the opposite way
 	"""
-	def join(self, tree2, key: int, val: str):
+	def join(self, tree2: AVLTree, key: int, val: str):
+		if self.root.is_real_node() == False:
+			tree2.insert(key, val)
+			self.root = tree2.root
+			self.max = tree2.max
+			return
+		
+		if tree2.root.is_real_node() == False:
+			self.insert(key, val)
+			return
+		
+
 		return
 
 
