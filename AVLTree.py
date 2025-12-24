@@ -31,8 +31,9 @@ class AVLNode(object):
 	@returns: False if self is a virtual node, True otherwise.
 	"""
 	def is_real_node(self):
-		return False
+		return self.height != -1
 	
+
 	"""returns the balance factor of self by substracting the height of the right\
 	subtree from the height of the left subtree
 	
@@ -40,12 +41,35 @@ class AVLNode(object):
 	@returns: the balance factor of self
 	"""
 	def get_bf(self):
-		return 0
+		return self.left.height - self.right.height
+
 
 	"""updates the height of self based on the heights of its children
 	"""
 	def update_height(self):
-		return
+		self.height = max(self.left.height, self.right.height) + 1
+	
+
+	"""sets the left child of self to node and updates node's parent pointer
+
+	@type node: AVLNode
+	@param node: the new left child of self
+	"""
+	def set_left(self, node: AVLNode):
+		self.left = node
+		if node is not None:
+			node.parent = self
+
+	
+	"""sets the right child of self to node and updates node's parent pointer
+	
+	@type node: AVLNode
+	@param node: the new right child of self
+	"""
+	def set_right(self, node: AVLNode):
+		self.right = node
+		if node is not None:
+			node.parent = self
 
 """
 A class implementing an AVL tree.
@@ -56,8 +80,10 @@ class AVLTree(object):
 	"""
 	Constructor, you are allowed to add more fields.
 	"""
-	def __init__(self):
-		self.root = None
+	def __init__(self, root = None, max = None, tree_size = 0):
+		self.root = root
+		self.max = max
+		self.tree_size = tree_size
 
 
 	"""returns the node with the maximal key in the dictionary
@@ -66,7 +92,7 @@ class AVLTree(object):
 	@returns: the maximal node, None if the dictionary is empty
 	"""
 	def max_node(self):
-		return None
+		return self.max
 
 
 	"""returns the number of items in dictionary 
@@ -75,7 +101,7 @@ class AVLTree(object):
 	@returns: the number of items in dictionary 
 	"""
 	def size(self):
-		return -1	
+		return self.tree_size
 
 
 	"""returns the root of the tree representing the dictionary
@@ -84,16 +110,32 @@ class AVLTree(object):
 	@returns: the root, None if the dictionary is empty
 	"""
 	def get_root(self):
-		return None
+		return self.root
 
-		
+
+	"""helper function for in_order_traversal
+	
+	@type node: AVLNode
+	@param node: the node to start the traversal from
+	@type lst: list
+	@param lst: the list to append the (key, value) touples to
+	"""
+	def in_order_traversal(self, node: AVLNode, lst: list):
+		if node is None or node.is_real_node() == False:
+			return
+		self.in_order_traversal(node.left, lst)
+		lst.append((node.key, node.value))
+		self.in_order_traversal(node.right, lst)
+
 	"""returns an array representing dictionary 
 
 	@rtype: list
 	@returns: a sorted list according to key of touples (key, value) representing the data structure
 	"""
 	def avl_to_array(self):
-		return None
+		arr = []
+		self.in_order_traversal(self.root, arr)
+		return arr
 
 
 	"""searches for a node in the dictionary corresponding to the key (starting at node)
