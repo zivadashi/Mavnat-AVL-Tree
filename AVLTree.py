@@ -188,7 +188,12 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def find_smaller_parent(self, node: AVLNode, key: int):
-		return None, -1
+		temp_node = node
+		edges = 0
+		while temp_node.is_real_node() and temp_node.key >= key:
+			temp_node = temp_node.parent
+			edges += 1
+		return temp_node, edges
 
 
 	"""searches for a node in the dictionary corresponding to the key, starting at the max
@@ -200,6 +205,12 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def finger_search(self, key: int):
+		parent, edges_1 = self.find_smaller_parent(self.max, key)
+		if parent is None:
+			return None, -1
+		res_node, edges_2 = self.Search_from_node(parent, key)
+		if res_node.is_real_node():
+			return res_node, edges_1 + edges_2
 		return None, -1
 
 
