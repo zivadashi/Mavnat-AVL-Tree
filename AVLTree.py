@@ -318,7 +318,18 @@ class AVLTree(object):
 	@returns: the successor of node, None if node has no successor
 	"""
 	def successor(self, node: AVLNode):
-		return None
+		if node.right.is_real_node():
+			# going down to find the successor
+			temp_node = node.right
+			while temp_node.left.is_real_node():
+				temp_node = temp_node.left
+			return temp_node
+		else:
+			# going up to find the successor
+			temp_node = node
+			while temp_node.parent is not None and temp_node == temp_node.parent.right:
+				temp_node = temp_node.parent
+			return temp_node.parent
 	
 
 	"""deletes node physically from the dictionary
@@ -327,6 +338,17 @@ class AVLTree(object):
 	@pre: node is a real pointer to a node in self
 	"""
 	def delete_physically(self, node: AVLNode):
+		# works even if both node's children are virtual
+		if node.right.is_real_node() == False:
+			if node.parent.left == node:
+				node.parent.set_left(node.left)
+			else:
+				node.parent.set_right(node.left)
+		elif node.left.is_real_node() == False:
+			if node.parent.left == node:
+				node.parent.set_left(node.right)
+			else:
+				node.parent.set_right(node.right)
 		return
 
 
@@ -336,7 +358,21 @@ class AVLTree(object):
 	@pre: node is a real pointer to a node in self
 	"""
 	def delete(self, node: AVLNode):
-		return	
+		if node.left.is_real_node() == False or node.right.is_real_node() == False:
+			self.delete_physically(node)
+			return
+		
+		# node has two real children
+		u = self.successor(node)
+		self.delete_physically(u)
+		if node.parent.left == node:
+			node.parent.set_left(u)
+		else:
+			node.parent.set_right(u)
+		
+		u.set_left(node.left)
+		u.set_right(node.right)
+		return
 
 	
 	"""starting from root, finds the minimal node with height
