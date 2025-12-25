@@ -123,6 +123,7 @@ class AVLTree(object):
 	@param node: the node to start the traversal from
 	@type lst: list
 	@param lst: the list to append the (key, value) touples to
+	WC: O(n)
 	"""
 	def in_order_traversal(self, node: AVLNode, lst: list):
 		if node is None or node.is_real_node() == False:
@@ -135,6 +136,7 @@ class AVLTree(object):
 
 	@rtype: list
 	@returns: a sorted list according to key of touples (key, value) representing the data structure
+	WC: O(n)
 	"""
 	def avl_to_array(self):
 		arr = []
@@ -151,6 +153,7 @@ class AVLTree(object):
 	@rtype: (AVLNode,int)
 	@returns: a tuple (x,e) where x is the node corresponding to key or the corresponding virtual node (if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
+ 	WC: O(log n)
 	"""
 	def search_from_node(self, node: AVLNode, key: int):
 		if key == node.key or node.is_real_node() == False:
@@ -171,6 +174,7 @@ class AVLTree(object):
 	@rtype: (AVLNode,int)
 	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
+	WC: O(log n)
 	"""
 	def search(self, key):
 		if self.root is None or not self.root.is_real_node():
@@ -190,6 +194,7 @@ class AVLTree(object):
 	@rtype: (AVLNode,int)
 	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
+	WC: O(log n)
 	"""
 	def find_smaller_parent(self, node: AVLNode, key: int):
 		temp_node = node
@@ -207,6 +212,7 @@ class AVLTree(object):
 	@rtype: (AVLNode,int)
 	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
+	WC: O(log n)
 	"""
 	def finger_search(self, key):
 		if self.max is None:
@@ -253,6 +259,11 @@ class AVLTree(object):
 		u.update_height()
 
 
+	"""performs a right rotation on node
+ 
+	@type node: AVLNode
+	@param node: the node to perform the right rotation on
+	"""
 	def right_rotation(self, node: AVLNode):
 		if node is None or not node.is_real_node():
 			return
@@ -279,6 +290,11 @@ class AVLTree(object):
 		u.update_height()
 
 
+	"""performs the appropriate rotation(s) on node to fix an AVL violation
+ 
+	@type node: AVLNode
+	@param node: the node to perform the rotation(s) on
+	"""
 	def rotate(self, node: AVLNode):
 		if node is None or not node.is_real_node():
 			return
@@ -308,7 +324,9 @@ class AVLTree(object):
 	@type deletion: bool
 	@param deletion: True if the fixing is after a deletion, False if after an insertion
 	@rtype: int
-	@returns: the number of promotions (aka. height increases) performed during the fixing"""
+	@returns: the number of promotions (aka. height increases) performed during the fixing
+	WC: O(log n)
+	"""
 	def fix_above(self, node: AVLNode, deletion: bool):
 		promotions = 0
 		while node is not None and node.is_real_node():
@@ -358,6 +376,7 @@ class AVLTree(object):
 	@param val: value of the new node
 	@rtype: (AVLNode,int)
 	@returns: a tuple (x,h) where x is the new node, and h is the number of PROMOTE cases during the AVL rebalancing
+	WC: O(log n)
 	"""
 	def insert_node(self, v_node: AVLNode, key: int, val: str):
 		self.create_node_from_virtual(v_node, key, val)
@@ -380,7 +399,8 @@ class AVLTree(object):
 	@rtype: (AVLNode,int,int)
 	@returns: a 3-tuple (x,e,h) where x is the new node,
 	e is the number of edges on the path between the starting node and new node before rebalancing,
-	and h is the number of PROMOTE cases during the AVL rebalancing
+	and h is the number of Promote cases during the AVL rebalancing
+	WC: O(log n)
 	"""
 	def insert(self, key, val):
 		node, edges = self.search_from_node(self.root, key)
@@ -398,7 +418,8 @@ class AVLTree(object):
 	@rtype: (AVLNode,int,int)
 	@returns: a 3-tuple (x,e,h) where x is the new node,
 	e is the number of edges on the path between the starting node and new node before rebalancing,
-	and h is the number of PROMOTE cases during the AVL rebalancing
+	and h is the number of Promote cases during the AVL rebalancing
+	WC: O(log n)
 	"""
 	def finger_insert(self, key, val):
 		if self.max is None or self.max.is_real_node() == False:
@@ -415,6 +436,7 @@ class AVLTree(object):
 	@param node: the node to find its successor
 	@rtype: AVLNode
 	@returns: the successor of node, None if node has no successor
+	WC: O(log n)
 	"""
 	def successor(self, node: AVLNode):
 		if node.right.is_real_node():
@@ -461,6 +483,7 @@ class AVLTree(object):
 
 	@type node: AVLNode
 	@pre: node is a real pointer to a node in self
+	WC: O(log n)
 	"""
 	def delete(self, node):
 		self.tree_size -= 1
@@ -510,6 +533,7 @@ class AVLTree(object):
 	@param height: the height to search for
 	@rtype: AVLNode
 	@returns: the minimal node with height height, None if such a node does not exist
+	WC: O(log n)
 	"""
 	def find_minimal_by_height(self, height: int):
 		if self.root is None or not self.root.is_real_node():
@@ -527,6 +551,7 @@ class AVLTree(object):
 	@param height: the height to search for
 	@rtype: AVLNode
 	@returns: the maximal node with height height, None if such a node does not exist
+	WC: O(log n)
 	"""
 	def find_maximal_by_height(self, height: int):
 		if self.root is None or not self.root.is_real_node():
@@ -548,6 +573,7 @@ class AVLTree(object):
 	@param val: the value corresponding to key
 	@pre: all keys in self are smaller than key and all keys in tree2 are larger than key,
 	or the opposite way
+	WC: O(log n)
 	"""
 	def join(self, tree2, key, val):
 		if self.root.is_real_node() == False:
@@ -619,6 +645,7 @@ class AVLTree(object):
 	@returns: a tuple (left, right), where left is an AVLTree representing the keys in the 
 	dictionary smaller than node.key, and right is an AVLTree representing the keys in the 
 	dictionary larger than node.key.
+ 	WC: O(log n)
 	"""
 	def split(self, node):
 		if (node is None):
