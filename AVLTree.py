@@ -173,9 +173,9 @@ class AVLTree(object):
 	def search(self, key: int):
 		if self.root is None:
 			return None, -1
-		node = self.search_from_node(self.root, key)
-		if node[0].is_real_node():
-			return node
+		node, edges = self.search_from_node(self.root, key)
+		if node.is_real_node():
+			return node, edges
 		return None, -1
 
 
@@ -436,16 +436,22 @@ class AVLTree(object):
 	"""
 	def delete_physically(self, node: AVLNode):
 		# works even if both node's children are virtual
+		assigned = None
 		if node.right.is_real_node() == False:
 			if node.parent.left == node:
 				node.parent.set_left(node.left)
 			else:
 				node.parent.set_right(node.left)
+			assigned = node.left
 		elif node.left.is_real_node() == False:
 			if node.parent.left == node:
 				node.parent.set_left(node.right)
 			else:
 				node.parent.set_right(node.right)
+			assigned = node.right
+		
+		if self.root == node:
+			self.root = assigned
 		return
 
 
@@ -458,24 +464,32 @@ class AVLTree(object):
 		self.tree_size -= 1
 		if node.left.is_real_node() == False or node.right.is_real_node() == False:
 			# node has at most one real child
+			parent = node.parent
 			self.delete_physically(node)
+			self.fix_above(parent, True)
 		else:
 			# node has two real children
 			u = self.successor(node)
+			parent = u.parent
 			self.delete_physically(u)
 			if node.parent.left == node:
 				node.parent.set_left(u)
 			else:
 				node.parent.set_right(u)
 			
-			if u.parent == node:
-				u.parent = node.parent
-			else:
-				u.set_left(node.left)
-				u.set_right(node.right)
-
-			self.fix_above(u.parent, True)
+			# if parent == node:
+			u.set_left(node.left)
+			# if parent != node:
+			u.set_right(node.right)
+			u.update_height()
 			
+			if self.root == node:
+				self.root = u
+
+			self.fix_above(parent.left, True)
+		
+
+
 		# updating max if needed
 		if self.max == node:
 			if node.left.is_real_node():
