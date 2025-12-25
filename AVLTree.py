@@ -16,7 +16,7 @@ class AVLNode(object):
 	@type value: string
 	@param value: data of your node
 	"""
-	def __init__(self, key: int, value: str):
+	def __init__(self, key, value):
 		self.key = key
 		self.value = value
 		self.left = None
@@ -80,12 +80,10 @@ class AVLTree(object):
 	"""
 	Constructor, you are allowed to add more fields.
 	"""
-	def __init__(self, root = None, max = None, tree_size = 0):
-		self.root = root
-		self.max = max
-		self.tree_size = tree_size
-		if self.root is None:
-			self.root = AVLNode(-1, "")
+	def __init__(self):
+		self.root = AVLNode(-1, "")
+		self.max = None
+		self.tree_size = 0
 
 
 	"""returns the node with the maximal key in the dictionary
@@ -174,13 +172,13 @@ class AVLTree(object):
 	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
-	def search(self, key: int):
+	def search(self, key):
 		if self.root is None or not self.root.is_real_node():
 			return None, -1
 		node, edges = self.search_from_node(self.root, key)
 		if node.is_real_node():
 			return node, edges + 1
-		return None, -1
+		return None, edges + 1
 
 
 	"""searches for the biggest node in the dictionary smaller than key (starting at node)
@@ -210,18 +208,18 @@ class AVLTree(object):
 	@returns: a tuple (x,e) where x is the node corresponding to key (or None if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
-	def finger_search(self, key: int):
+	def finger_search(self, key):
 		if self.max is None:
 			return None, -1
 		if self.max.key == key:
 			return self.max, 1
 		parent, edges_1 = self.find_smaller_parent(self.max, key)
 		if parent is None:
-			return None, -1
+			return None, edges_1 + 1
 		res_node, edges_2 = self.search_from_node(parent, key)
 		if res_node.is_real_node():
 			return res_node, edges_1 + edges_2 + 1
-		return None, -1
+		return None, edges_1 + edges_2 + 1
 
 
 	"""performs a left rotation on node
@@ -384,7 +382,7 @@ class AVLTree(object):
 	e is the number of edges on the path between the starting node and new node before rebalancing,
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
-	def insert(self, key: int, val: str):
+	def insert(self, key, val):
 		node, edges = self.search_from_node(self.root, key)
 		inserted_node, promotions = self.insert_node(node, key, val)
 		return inserted_node, edges, promotions
@@ -402,7 +400,7 @@ class AVLTree(object):
 	e is the number of edges on the path between the starting node and new node before rebalancing,
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
-	def finger_insert(self, key: int, val: str):
+	def finger_insert(self, key, val):
 		if self.max is None or self.max.is_real_node() == False:
 			return self.insert(key, val)
 		search_root, edges = self.find_smaller_parent(self.max, key)
@@ -464,7 +462,7 @@ class AVLTree(object):
 	@type node: AVLNode
 	@pre: node is a real pointer to a node in self
 	"""
-	def delete(self, node: AVLNode):
+	def delete(self, node):
 		self.tree_size -= 1
 		if node.left.is_real_node() == False or node.right.is_real_node() == False:
 			# node has at most one real child
@@ -551,7 +549,7 @@ class AVLTree(object):
 	@pre: all keys in self are smaller than key and all keys in tree2 are larger than key,
 	or the opposite way
 	"""
-	def join(self, tree2: AVLTree, key: int, val: str):
+	def join(self, tree2, key, val):
 		if self.root.is_real_node() == False:
 			tree2.insert(key, val)
 			self.root = tree2.root
@@ -622,28 +620,32 @@ class AVLTree(object):
 	dictionary smaller than node.key, and right is an AVLTree representing the keys in the 
 	dictionary larger than node.key.
 	"""
-	def split(self, node: AVLNode):
+	def split(self, node):
 		if (node is None):
 			return None, None
 		if self.search(node.key)[0] != node:
 			return AVLNode(None, None), AVLNode(None, None)
 
-		t1 = AVLTree(node.left, None, 0)
-		t2 = AVLTree(node.right, self.max, 0)
+		t1 = AVLTree()
+		t1.root = node.left
+		t2 = AVLTree()
+		t2.root = node.right
   
 		temp_node = node
 		while temp_node != self.root:
 			parent = temp_node.parent
 			if parent.left == temp_node:
 				# temp_node is a left child
-				new_tree = AVLTree(parent.right, None, 0)
+				new_tree = AVLTree()
+				new_tree.root = parent.right
 				new_tree.root.parent = AVLNode(-1, None)
 				parent.set_right(AVLNode(-1, ""))
 				t2.join(new_tree, parent.key, parent.value)
 				#self.fix_above(parent, True)
 			else:
 				# temp_node is a right child
-				new_tree = AVLTree(parent.left, None, 0)
+				new_tree = AVLTree()
+				new_tree.root = parent.left
 				new_tree.root.parent = AVLNode(-1, None)
 				parent.set_left(AVLNode(-1, ""))
 				t1.join(new_tree, parent.key, parent.value)
