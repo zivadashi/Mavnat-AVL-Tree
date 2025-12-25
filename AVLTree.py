@@ -148,15 +148,15 @@ class AVLTree(object):
 	@returns: a tuple (x,e) where x is the node corresponding to key or the corresponding virtual node (if not found),
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
-	def Search_from_node(self, node: AVLNode, key: int):
+	def search_from_node(self, node: AVLNode, key: int):
 		if key == node.key or node.is_real_node() == False:
 			# if we found the key or reached a virtual node
 			return node, 0
 		elif key < node.key:
-			res_node, edges = self.Search_from_node(node.left, key)
+			res_node, edges = self.search_from_node(node.left, key)
 			return res_node, edges + 1
 		else:
-			res_node, edges = self.Search_from_node(node.right, key)
+			res_node, edges = self.search_from_node(node.right, key)
 			return res_node, edges + 1
 
 
@@ -208,7 +208,7 @@ class AVLTree(object):
 		parent, edges_1 = self.find_smaller_parent(self.max, key)
 		if parent is None:
 			return None, -1
-		res_node, edges_2 = self.Search_from_node(parent, key)
+		res_node, edges_2 = self.search_from_node(parent, key)
 		if res_node.is_real_node():
 			return res_node, edges_1 + edges_2
 		return None, -1
@@ -219,90 +219,79 @@ class AVLTree(object):
 	@type node: AVLNode
 	@param node: the node to perform the left rotation on
 	"""
-    def left_rotation(self, node: AVLNode):
-        v = node
-        if v is None or not v.is_real_node():
-            return
+	def left_rotation(self, node: AVLNode):
+		if node is None or not node.is_real_node():
+			return
 
-        u = v.right
-        if u is None or not u.is_real_node():
-            return
+		u = node.right
+		if u is None or not u.is_real_node():
+			return
 
-        parent = v.parent
+		parent = node.parent
+		if parent is not None and parent.is_real_node():
+			if parent.left is node:
+				parent.set_left(u)
+			else:
+				parent.set_right(u)
+		else:
+			self.root = u
+			u.parent = AVLNode(None, None)
 
-        # מחברים את u במקום v
-        if parent is not None:
-            if parent.left is v:
-                parent.set_left(u)
-            else:
-                parent.set_right(u)
-        else:
-            self.root = u
-            u.parent = None
+		w = u.left
+		u.set_left(node)
+		node.set_right(w)
 
-        w = u.left
-
-        u.set_left(v)
-        v.set_right(w)
-
-        v.update_height()
-        u.update_height()
+		node.update_height()
+		u.update_height()
 
 
-    def right_rotation(self, node: AVLNode):
-        v = node
-        if v is None or not v.is_real_node():
-            return
+	def right_rotation(self, node: AVLNode):
+		if node is None or not node.is_real_node():
+			return
 
-        u = v.left
-        if u is None or not u.is_real_node():
-            return
+		u = node.left
+		if u is None or not u.is_real_node():
+			return
 
-        parent = v.parent
+		parent = node.parent
+		if parent is not None and parent.is_real_node():
+			if parent.left is node:
+				parent.set_left(u)
+			else:
+				parent.set_right(u)
+		else:
+			self.root = u
+			u.parent = AVLNode(None, None)
 
-        # מחברים את u במקום v
-        if parent is not None:
-            if parent.left is v:
-                parent.set_left(u)
-            else:
-                parent.set_right(u)
-        else:
-            self.root = u
-            u.parent = None
+		w = u.right
+		u.set_right(node)
+		node.set_left(w)
 
-        w = u.right
-
-        u.set_right(v)
-        v.set_left(w)
-
-        v.update_height()
-        u.update_height()
+		node.update_height()
+		u.update_height()
 
 
-    def rotate(self, node: AVLNode):
-        v = node
-        if v is None or not v.is_real_node():
-            return
+	def rotate(self, node: AVLNode):
+		if node is None or not node.is_real_node():
+			return
 
-        bf_v = v.get_bf()
+		bf = node.get_bf()
 
-        # bf = -2 → כבד ימינה
-        if bf_v == -2:
-            r = v.right
-            if r.get_bf() in (-1, 0):
-                self.left_rotation(v)
-            else:  # bf = +1
-                self.right_rotation(r)
-                self.left_rotation(v)
+		if bf == -2:
+			r = node.right
+			if r.get_bf() in (-1, 0):
+				self.left_rotation(node)
+			else:  # bf = +1
+				self.right_rotation(r)
+				self.left_rotation(node)
 
-        # bf = +2 → כבד שמאלה
-        elif bf_v == 2:
-            l = v.left
-            if l.get_bf() in (1, 0):
-                self.right_rotation(v)
-            else:  # bf = -1
-                self.left_rotation(l)
-                self.right_rotation(v)
+		elif bf == 2:
+			l = node.left
+			if l.get_bf() in (1, 0):
+				self.right_rotation(node)
+			else:  # bf = -1
+				self.left_rotation(l)
+				self.right_rotation(node)
 
 	"""fixes the AVL tree above node after an insertion or deletion
 	
@@ -312,8 +301,30 @@ class AVLTree(object):
 	@param deletion: True if the fixing is after a deletion, False if after an insertion
 	@rtype: int
 	@returns: the number of promotions (aka. height increases) performed during the fixing"""
-	def fix_above(self, v_node: AVLNode, deletion: bool):
-		return -1
+	def fix_above(self, node: AVLNode, deletion: bool):
+		promotions = 0
+		node = node.parent
+		while node is not None and node.is_real_node():
+			prev_height = node.height
+			node.update_height()
+			bf = node.get_bf()
+			if abs(bf) <= 1:
+				if node.height != prev_height:
+					# height changed
+					promotions += 1
+				else:
+					# height didn't change, stop fixing
+					break
+			else:
+				# after rotation, heights are updated inside rotate function
+				self.rotate(node)
+				if deletion == False:
+					# insertion case
+					# after rotation, height of node decreases
+					# so we stop fixing
+					break
+			node = node.parent
+		return promotions
 
 	"""creates a new AVLNode from a virtual node and gives it two children which are virtual nodes
 	
@@ -324,7 +335,12 @@ class AVLTree(object):
 	@type val: string
 	@param val: value of the new node
 	"""
-	def create_node_from_virtual(self, node: AVLNode, key: int, val: str):
+	def create_node_from_virtual(self, v_node: AVLNode, key: int, val: str):
+		v_node.key = key
+		v_node.value = val
+		v_node.set_left(AVLNode(-1, ""))
+		v_node.set_right(AVLNode(-1, ""))
+		v_node.update_height()
 		return 
 
 
@@ -336,9 +352,16 @@ class AVLTree(object):
 	@param key: key of the new node
 	@type val: string
 	@param val: value of the new node
+	@rtype: (AVLNode,int)
+	@returns: a tuple (x,h) where x is the new node, and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 	def insert_node(self, v_node: AVLNode, key: int, val: str):
-		return
+		self.create_node_from_virtual(v_node, key, val)
+		if key > self.max.key or self.max is None:
+			self.max = v_node
+		self.tree_size += 1
+		promotions = self.fix_above(v_node, False)
+		return v_node, promotions
 	
 
 	"""inserts a new node into the dictionary with corresponding key and value (starting at the root)
@@ -354,7 +377,9 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 	def insert(self, key: int, val: str):
-		return None, -1, -1
+		node, edges = self.search_from_node(self.root, key)
+		inserted_node, promotions = self.insert_node(node, key, val)
+		return inserted_node, edges, promotions
 
 
 	"""inserts a new node into the dictionary with corresponding key and value, starting at the max
@@ -370,7 +395,10 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 	def finger_insert(self, key: int, val: str):
-		return None, -1, -1
+		search_root, edges = self.find_smaller_parent(self.max, key)
+		node, edges_2 = self.search_from_node(search_root, key)
+		inserted_node, promotions = self.insert_node(node, key, val)
+		return inserted_node, edges + edges_2, promotions
 
 	
 	"""returns the successor of a given node in the tree
