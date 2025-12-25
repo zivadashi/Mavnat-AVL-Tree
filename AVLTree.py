@@ -84,6 +84,8 @@ class AVLTree(object):
 		self.root = root
 		self.max = max
 		self.tree_size = tree_size
+		if self.root is None:
+			self.root = AVLNode(-1, "")
 
 
 	"""returns the node with the maximal key in the dictionary
@@ -205,6 +207,8 @@ class AVLTree(object):
 	and e is the number of edges on the path between the starting node and ending node+1.
 	"""
 	def finger_search(self, key: int):
+		if self.max is None:
+			return None, -1
 		parent, edges_1 = self.find_smaller_parent(self.max, key)
 		if parent is None:
 			return None, -1
@@ -357,7 +361,7 @@ class AVLTree(object):
 	"""
 	def insert_node(self, v_node: AVLNode, key: int, val: str):
 		self.create_node_from_virtual(v_node, key, val)
-		if key > self.max.key or self.max is None:
+		if self.max is None or self.max.is_real_node() == False or key > self.max.key:
 			self.max = v_node
 		self.tree_size += 1
 		promotions = self.fix_above(v_node, False)
@@ -395,6 +399,8 @@ class AVLTree(object):
 	and h is the number of PROMOTE cases during the AVL rebalancing
 	"""
 	def finger_insert(self, key: int, val: str):
+		if self.max is None or self.max.is_real_node() == False:
+			return self.insert(key, val)
 		search_root, edges = self.find_smaller_parent(self.max, key)
 		node, edges_2 = self.search_from_node(search_root, key)
 		inserted_node, promotions = self.insert_node(node, key, val)
@@ -449,28 +455,35 @@ class AVLTree(object):
 	@pre: node is a real pointer to a node in self
 	"""
 	def delete(self, node: AVLNode):
+		self.tree_size -= 1
 		if node.left.is_real_node() == False or node.right.is_real_node() == False:
+			# node has at most one real child
 			self.delete_physically(node)
-			return
-		
-		# node has two real children
-		u = self.successor(node)
-		self.delete_physically(u)
-		if node.parent.left == node:
-			node.parent.set_left(u)
 		else:
-			node.parent.set_right(u)
-		
-		if u.parent == node:
-			u.parent = node.parent
-		else:
-			u.set_left(node.left)
-			u.set_right(node.right)
+			# node has two real children
+			u = self.successor(node)
+			self.delete_physically(u)
+			if node.parent.left == node:
+				node.parent.set_left(u)
+			else:
+				node.parent.set_right(u)
+			
+			if u.parent == node:
+				u.parent = node.parent
+			else:
+				u.set_left(node.left)
+				u.set_right(node.right)
 
-		self.fix_above(u.parent, True)
-
+			self.fix_above(u.parent, True)
+			
+		# updating max if needed
 		if self.max == node:
-			self.max = u
+			if node.left.is_real_node():
+				self.max = node.left
+				while self.max.right.is_real_node():
+					self.max = self.max.right
+			else:
+				self.max = node.parent
 
 		return
 
@@ -542,7 +555,7 @@ class AVLTree(object):
 			return
 		
 
-		if tree2.root.height < tree2.root.height:
+		if tree2.root.height < self.root.height:
 			t1 = tree2
 			t2 = self
 		else:
@@ -560,6 +573,7 @@ class AVLTree(object):
 			new_node.set_left(maximal)
 			new_node.set_right(t1.root)
 			self.max = t1.max
+			maximal.update_height()
 		else:
 			# t1's keys are smaller than t2's keys
 			minimal = t1.find_minimal_by_height(t2.root.height)
@@ -571,6 +585,7 @@ class AVLTree(object):
 			new_node.set_left(t1.root)
 			new_node.set_right(minimal)
 			self.max = t2.max
+			minimal.update_height()
 
 		# fixing the tree
 		self.fix_above(new_node.parent, False)
@@ -594,15 +609,15 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node: AVLNode):
-		t1 = node.left
-		t2 = node.right
+		t1 = AVLTree(node.left, None, node.left.size)
+		t2 = AVLTree(node.right, self.max, node.right.size)
 
 		temp_node = node
 		while temp_node != self.root:
 			parent = temp_node.parent
 			if parent.left == temp_node:
 				# temp_node is a left child
-				new_tree = AVLTree(parent.right, self.max, parent.right.size)
+				new_tree = AVLTree(parent.right, None, parent.right.size)
 				parent.set_right(AVLNode(-1, ""))
 				self.fix_above(parent, True)
 				t2.join(new_tree, parent.key, parent.value)
@@ -613,6 +628,7 @@ class AVLTree(object):
 				self.fix_above(parent, True)
 				t1.join(new_tree, parent.key, parent.value)
 			temp_node = parent
+		# making self empty
 		self.root = AVLNode(-1, "")
 		self.max = None
 		self.tree_size = 0
