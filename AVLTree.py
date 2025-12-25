@@ -451,6 +451,44 @@ class AVLTree(object):
 			return
 		
 
+		if tree2.root.height < tree2.root.height:
+			t1 = tree2
+			t2 = self
+		else:
+			t1 = self
+			t2 = tree2
+		
+		if t1.root.key > t2.root.key:
+			# t1's keys are larger than t2's keys
+			maximal = t2.find_maximal_by_height(t1.root.height)
+			new_node = AVLNode(key, val)
+			if maximal.parent.left == maximal:
+				maximal.parent.set_left(new_node)
+			else:
+				maximal.parent.set_right(new_node)
+			new_node.set_left(maximal)
+			new_node.set_right(t1.root)
+			self.max = t1.max
+		else:
+			# t1's keys are smaller than t2's keys
+			minimal = t1.find_minimal_by_height(t2.root.height)
+			new_node = AVLNode(key, val)
+			if minimal.parent.left == minimal:
+				minimal.parent.set_left(new_node)
+			else:
+				minimal.parent.set_right(new_node)
+			new_node.set_left(t1.root)
+			new_node.set_right(minimal)
+			self.max = t2.max
+
+		# fixing the tree
+		self.fix_above(new_node.parent, False)
+		self.tree_size += tree2.size() + 1
+		
+		# making tree2 empty
+		tree2.root = AVLNode(-1, "")
+		tree2.max = None
+		tree2.tree_size = 0
 		return
 
 
