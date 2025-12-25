@@ -503,4 +503,26 @@ class AVLTree(object):
 	dictionary larger than node.key.
 	"""
 	def split(self, node: AVLNode):
-		return None, None
+		t1 = node.left
+		t2 = node.right
+
+		temp_node = node
+		while temp_node != self.root:
+			parent = temp_node.parent
+			if parent.left == temp_node:
+				# temp_node is a left child
+				new_tree = AVLTree(parent.right, self.max, parent.right.size)
+				parent.set_right(AVLNode(-1, ""))
+				self.fix_above(parent, True)
+				t2.join(new_tree, parent.key, parent.value)
+			else:
+				# temp_node is a right child
+				new_tree = AVLTree(parent.left, None, parent.left.size)
+				parent.set_left(AVLNode(-1, ""))
+				self.fix_above(parent, True)
+				t1.join(new_tree, parent.key, parent.value)
+			temp_node = parent
+		self.root = AVLNode(-1, "")
+		self.max = None
+		self.tree_size = 0
+		return t1, t2
