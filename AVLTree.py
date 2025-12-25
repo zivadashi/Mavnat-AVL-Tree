@@ -365,6 +365,8 @@ class AVLTree(object):
 			self.max = v_node
 		self.tree_size += 1
 		promotions = self.fix_above(v_node, False)
+		if self.root.parent is None:
+			self.root.parent = AVLNode(None, None)
 		return v_node, promotions
 	
 
@@ -510,17 +512,19 @@ class AVLTree(object):
 	@returns: the minimal node with height height, None if such a node does not exist
 	"""
 	def find_minimal_by_height(self, height: int):
+		if self.root is None or not self.root.is_real_node():
+			return None
+
+		stack = []
 		node = self.root
-		while node.is_real_node():
+		while node.is_real_node() or stack:
+			while node.is_real_node():
+				stack.append(node)
+				node = node.left
+			node = stack.pop()
 			if node.height == height:
 				return node
-			elif node.height > height:
-				if node.left.is_real_node():
-					node = node.left
-				elif node.right.is_real_node():
-					node = node.right
-			else:
-				return None
+			node = node.right
 		return None
 	
 
@@ -532,17 +536,19 @@ class AVLTree(object):
 	@returns: the maximal node with height height, None if such a node does not exist
 	"""
 	def find_maximal_by_height(self, height: int):
+		if self.root is None or not self.root.is_real_node():
+			return None
+
+		stack = []
 		node = self.root
-		while node.is_real_node():
+		while node.is_real_node() or stack:
+			while node.is_real_node():
+				stack.append(node)
+				node = node.right
+			node = stack.pop()
 			if node.height == height:
 				return node
-			elif node.height > height:
-				if node.right.is_real_node():
-					node = node.right
-				elif node.left.is_real_node():
-					node = node.left
-			else:
-				return None
+			node = node.left
 		return None
 	
 
@@ -590,7 +596,7 @@ class AVLTree(object):
 			maximal.update_height()
 		else:
 			# t1's keys are smaller than t2's keys
-			minimal = t1.find_minimal_by_height(t2.root.height)
+			minimal = t2.find_minimal_by_height(t1.root.height)
 			new_node = AVLNode(key, val)
 			if minimal.parent.left == minimal:
 				minimal.parent.set_left(new_node)
