@@ -6,8 +6,6 @@
 #username2: shakeds
 
 
-from __future__ import annotations 
-
 """A class represnting a node in an AVL tree"""
 
 class AVLNode(object):
