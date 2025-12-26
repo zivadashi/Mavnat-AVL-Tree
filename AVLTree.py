@@ -1,10 +1,12 @@
 #id1: 216905810
 #name1: Ziv Adashi
 #username1: zivadashi
-#id2:
-#name2:
-#username2:
+#id2: 216150599
+#name2: Shaked Srabstein
+#username2: shakeds
 
+
+from __future__ import annotations 
 
 """A class represnting a node in an AVL tree"""
 
