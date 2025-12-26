@@ -6,6 +6,8 @@
 #username2: shakeds
 
 
+from __future__ import annotations 
+
 """A class represnting a node in an AVL tree"""
 
 class AVLNode(object):
@@ -55,7 +57,7 @@ class AVLNode(object):
 	@type node: AVLNode
 	@param node: the new left child of self
 	"""
-	def set_left(self, node: AVLNode):
+	def set_left(self, node):
 		self.left = node
 		if node is not None:
 			node.parent = self
@@ -66,7 +68,7 @@ class AVLNode(object):
 	@type node: AVLNode
 	@param node: the new right child of self
 	"""
-	def set_right(self, node: AVLNode):
+	def set_right(self, node):
 		self.right = node
 		if node is not None:
 			node.parent = self
